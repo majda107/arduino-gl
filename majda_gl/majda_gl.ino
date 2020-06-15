@@ -27,10 +27,12 @@
 const unsigned short WIDTH = 320;
 const unsigned short HEIGHT = 480;
 
-short min_x = 0;
-short min_y = 0;
-short max_x = 0;
-short max_y = 0;
+//short min_x = 0;
+//short min_y = 0;
+//short max_x = 0;
+//short max_y = 0;
+
+
 
 
 struct vec3f
@@ -209,11 +211,12 @@ void LCD_Clear(unsigned int j)
 
 void SetPixel(int x, int y, unsigned int color) 
 { 
-  if(x < min_x) min_x = x;
-  if(y < min_y) min_y = y;
+  //if(x < min_x) min_x = x;
+  //if(y < min_y) min_y = y;
 
-  if(x > max_x) max_x = x;
-  if(y > max_y) max_y = y;
+  //if(x > max_x) max_x = x;
+  //if(y > max_y) max_y = y;
+
   
   //Lcd_Write_Com(0x02c);
   //digitalWrite(LCD_RS,HIGH);
@@ -223,15 +226,16 @@ void SetPixel(int x, int y, unsigned int color)
   digitalWrite(LCD_CS,HIGH);
 }
 
-void ClearPixelMins(unsigned int color)
-{
-  for(int i = min_x; i <= max_x; i++)
-    for(int j = min_y; j <= max_y; j++)
-      SetPixel(i, j, color);
 
-  max_x = max_y = 0;
-  min_x = min_y = 1000;
-}
+//void ClearPixelMins(unsigned int color)
+//{
+//  for(int i = min_x; i <= max_x; i++)
+//    for(int j = min_y; j <= max_y; j++)
+//      SetPixel(i, j, color);
+//
+//  max_x = max_y = 0;
+//  min_x = min_y = 1000;
+//}
 
 
 
@@ -382,21 +386,20 @@ void populate_rotX(mat4f &m, float f) {
 
 float theta = 0;
 
-void render_loop() {
+void render_loop(unsigned int color) {
   mat4f mat_z, mat_x;
-  
-  theta += 0.4f;
   
   populate_rotZ(mat_z, theta);
   populate_rotX(mat_x, theta);
 
-  //zt += 0.5f;
-  //xt += 0.3f;
+
+  triangle t;
+
+  triangle t_proj;
   
   for(int ti = 0; ti < mesh_len; ti++)
   {
-    triangle t = cube_mesh[ti];
-    triangle t_proj;
+    t = cube_mesh[ti];
 
     for(int v = 0; v < 3; v++)
     {
@@ -418,11 +421,11 @@ void render_loop() {
       t_proj.p[v].x += 1.0f;
       t_proj.p[v].y += 1.0f;
 
-      t_proj.p[v].x *= 0.5f * (float)WIDTH/4;
-      t_proj.p[v].y *= 0.5f * (float)HEIGHT/4;
+      t_proj.p[v].x *= 0.5f * (float)WIDTH/2;
+      t_proj.p[v].y *= 0.5f * (float)HEIGHT/2;
     }
 
-    DrawTriangle(t_proj, WHITE);
+    DrawTriangle(t_proj, color);
   }
 }
 
@@ -462,29 +465,9 @@ void setup()
 
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  render_loop(BLACK);
+  theta += 0.4f;
+  render_loop(WHITE);
 
-  
-  
-
-
-  //DrawLine(10, 10, 200, 100, WHITE);
-
-  //DrawLine(120, 120, 30, 30, WHITE);  `
-
-  //DrawLine(30, 30, 300, 400, WHITE);
-
-  //DrawTriangle(100, 100, 100, 200, 200, 200, WHITE);
-  render_loop();
-
-
-  delay(200); // refresh after X seconds
-
-  //for(int i =0; i < 320; i++)
-  //  for(int j =0; j < 480; j++)
-  //    SetPixel(i, j, RED);
-
-  //LCD_Clear(BLACK);
-
-  ClearPixelMins(BLACK);
+  delay(50);
 }
