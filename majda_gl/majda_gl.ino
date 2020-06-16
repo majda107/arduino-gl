@@ -447,9 +447,9 @@ void setup()
   digitalWrite(A4, HIGH);
   Lcd_Init();
 
-  LCD_Clear(BLACK);
+  //LCD_Clear(BLACK);
 
-  load();
+  //load();
 }
 
 
@@ -461,13 +461,15 @@ void setup()
 
 void loop() {
 
-  theta += 0.2f;
-  render_loop(WHITE, false);
+  //theta += 0.2f;
+  //render_loop(WHITE, false);
 
-  theta -= 0.2f;
-  render_loop(BLACK, true);
+  //theta -= 0.2f;
+  //render_loop(BLACK, true);
 
-  theta += 0.2f;
+  //theta += 0.2f;
 
-  //delay(14);
+
+  
+  ////delay(14);
 }
