@@ -69,7 +69,7 @@ volatile uint8_t* rsport;
 
 uint8_t csmask;
 uint8_t rsmask;
-uint8_t dcmask;
+//uint8_t dcmask;
 
 
 void LCD_spi(uint16_t c) {
@@ -77,41 +77,36 @@ void LCD_spi(uint16_t c) {
   while(!(SPSR & _BV(SPIF)));
 }
 
-void LCD_start_t() {
-  //*csport &= ~csmask; //low
+void LCD_trans() {
+  *csport &= ~csmask; //low
 }
 
-void LCD_end_t() {
-  //*csport |= csmask; //hi 
+void LCD_enableCom() {
+  *rsport &= ~rsmask; //low
+}
+
+void LCD_enableDat() {
+  *rsport |= rsmask;
+}
+
+void LCD_disableCS() {
+  *csport |= csmask; // hi
 }
 
 void LCD_com(uint16_t c) {
-
-  //*rsport &= ~dcmask; //low
-  
-  *rsport &= ~rsmask; //low
-  *csport &= ~csmask; //low
+  LCD_enableCom();
   LCD_spi(c);
-  *csport |= csmask; //hi
 }
 
 void LCD_data(uint16_t c) {
-
-  //*rsport |=  dcmask; //hi
-  
-  *rsport |=  rsmask; //hi
-  *csport &= ~csmask; //low
+  LCD_enableDat();
   LCD_spi(c);
-  *csport |= csmask; //hi
 }
 
 void LCD_data16(uint16_t c) {
-
-  *rsport |=  rsmask; //hi
-  *csport &= ~csmask; //low
+  LCD_enableDat();
   LCD_spi(c >> 8);
   LCD_spi(c);
-  *csport |= csmask; //hi
 }
 
 void LCD_address(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
@@ -126,19 +121,35 @@ void LCD_address(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
   LCD_com(CMD_RAMWR);
 }
 
+void LCD_ClearMem() {
+  LCD_trans();
+
+  LCD_address(0, 0, 128, 160);
+
+  LCD_enableDat();
+  for(int x = 0; x < 128; x++)
+    for(int y = 0; y < 160; y++)
+    {
+      LCD_data16(0x00);
+    }
+  
+  LCD_disableCS();
+}
+
 
 void ClearScreen(uint16_t c) {
-  LCD_start_t();
+  LCD_trans();
   
   LCD_address(0, 0, 128, 160);
-  
+
+  LCD_enableDat();
   for(int x = 0; x < 128; x++)
     for(int y = 0; y < 160; y++)
     {
       LCD_data16(c);
     }
 
-  LCD_end_t();
+  LCD_disableCS();
 }
 
 
@@ -151,7 +162,7 @@ void LCD_init() {
 
   csmask = digitalPinToBitMask(__CS);
   rsmask = digitalPinToBitMask(__RS);
-  dcmask = digitalPinToBitMask(__DC);
+  //dcmask = digitalPinToBitMask(__DC);
 
 
 
@@ -165,7 +176,7 @@ void LCD_init() {
   *csport |= csmask;//hi
   
   //enable data stream
-  *rsport |= dcmask;
+  LCD_enableDat();
 
 
   pinMode(__DC, OUTPUT);
@@ -179,7 +190,7 @@ void LCD_init() {
 
   // CHIP INIT ~ !
 
-  LCD_start_t();
+  LCD_trans();
   
   LCD_com(CMD_SWRESET); //software reset
   delay(500);
@@ -239,7 +250,7 @@ void LCD_init() {
 
   delay(1);
 
-  //LCD_end_t();
+  LCD_ClearMem();
 }
 
 
