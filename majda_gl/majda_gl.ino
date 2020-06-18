@@ -23,7 +23,20 @@ struct vec3f
   vec3f() {
 
   }
+
+  float get_length() {
+    return sqrt(x*x + y*y + z*z);
+  }
+
+  void normalize() {
+    auto len = this->get_length();
+    
+    x /= len;
+    y /= len;
+    z /= len;
+  }
 };
+
 
 struct triangle
 {
@@ -40,13 +53,38 @@ struct mat4f
 };
 
 
+float dot(const vec3f& v1, const vec3f& v2)
+{
+  return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
 
+vec3f cross(const vec3f& v1, const vec3f& v2)
+{
+  vec3f v = vec3f(0, 0, 0);
+  
+  v.x = v1.y * v2.z - v1.z * v2.y;
+  v.y = v1.z * v2.x - v1.x * v2.z;
+  v.z = v1.x * v2.y - v1.y * v2.x;
+
+  return v;
+}
+
+
+vec3f operator+(const vec3f& v1, const vec3f& v2)
+{
+  return vec3f(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+}
+
+vec3f operator-(const vec3f& v1, const vec3f& v2)
+{
+  return vec3f(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+}
 
 
 
 void DrawTriangle(triangle t, unsigned int color, bool clean) {
-  //DrawTriangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color, clean);
-  tft.draw_triangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color);
+  DrawTriangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color, clean);
+  //tft.draw_triangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color);
 }
 
 void DrawTriangle(short x0, short y0, short x1, short y1, short x2, short y2, unsigned int color, bool clean)
@@ -58,7 +96,7 @@ void DrawTriangle(short x0, short y0, short x1, short y1, short x2, short y2, un
 
 
 
-
+ 
 vec3f multiply_mat4_vec3(vec3f v, mat4f m) {
   vec3f r;
 
@@ -81,6 +119,8 @@ vec3f multiply_mat4_vec3(vec3f v, mat4f m) {
 
 const int mesh_len = 12;
 triangle cube_mesh[mesh_len];
+
+vec3f camera = vec3f(0, 0, 0);
 
 mat4f mat_proj;
 
@@ -170,12 +210,14 @@ void render_loop(unsigned int color, bool clean) {
   triangle t;
 
   triangle t_proj;
+  vec3f l1, l2, normal, to_camera;
+  float dot_camera;
 
   for (int ti = 0; ti < mesh_len; ti++)
   {
     t = cube_mesh[ti];
 
-    for (int v = 0; v < 3; v++)
+    for (byte v = 0; v < 3; v++)
     {
       // translation
       //t.p[v].z += zt;
@@ -188,7 +230,26 @@ void render_loop(unsigned int color, bool clean) {
       t_proj.p[v].x += 0.0f;
       t_proj.p[v].y += 0.0f;
       t_proj.p[v].z += 3.25f;
+    }
 
+    l1 = t_proj.p[1] - t_proj.p[0];
+    l2 = t_proj.p[2] - t_proj.p[0];
+    
+    normal = cross(l1, l2);
+    normal.normalize();
+
+    to_camera = t_proj.p[0] - camera;
+    to_camera.normalize();
+    
+    dot_camera = dot(to_camera, normal);
+    if(dot_camera > 0.0f) 
+    {
+      continue;
+    }
+
+    for(byte v = 0; v < 3; v++)
+    {
+      // projection
       t_proj.p[v] = multiply_mat4_vec3(t_proj.p[v], mat_proj);
 
       // scale
@@ -224,7 +285,7 @@ void loop() {
   tft.fill_screen(BLACK);
 
   theta += 0.2f;
-  render_loop(WHITE, false);
+  render_loop(WHITE, false);  
 
   delay(14);
 }
