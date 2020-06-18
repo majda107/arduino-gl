@@ -83,8 +83,8 @@ vec3f operator-(const vec3f& v1, const vec3f& v2)
 
 
 void DrawTriangle(triangle t, unsigned int color, bool clean) {
-  DrawTriangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color, clean);
-  //tft.draw_triangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color);
+  //DrawTriangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color, clean);
+  tft.draw_triangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color);
 }
 
 void DrawTriangle(short x0, short y0, short x1, short y1, short x2, short y2, unsigned int color, bool clean)
@@ -211,7 +211,7 @@ void render_loop(unsigned int color, bool clean) {
 
   triangle t_proj;
   vec3f l1, l2, normal, to_camera;
-  float dot_camera;
+  float dot_camera, lum;
 
   for (int ti = 0; ti < mesh_len; ti++)
   {
@@ -259,6 +259,14 @@ void render_loop(unsigned int color, bool clean) {
       t_proj.p[v].x *= 0.5f * (float)tft.WIDTH;
       t_proj.p[v].y *= 0.5f * (float)tft.HEIGHT;
     }
+    
+
+    lum = min(abs(dot_camera*0.75f) + 0.25f, 1.0f);
+    
+    unsigned int color = lum * 31;   // r (31)
+    color = (color << 6) + lum * 63; // g (63)
+    color = (color << 5) + lum * 31; // b (31)
+ 
 
     DrawTriangle(t_proj, color, clean);
   }
@@ -287,5 +295,5 @@ void loop() {
   theta += 0.2f;
   render_loop(WHITE, false);  
 
-  delay(14);
+  delay(150);
 }
