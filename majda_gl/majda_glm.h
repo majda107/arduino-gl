@@ -1,3 +1,5 @@
+#pragma once
+
 // VECTORS
 struct vec3f
 {

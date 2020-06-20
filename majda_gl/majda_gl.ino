@@ -1,5 +1,10 @@
 #include "ILI9163C_TFT.h"
-#include "majda_glm.h"
+#include "majda_gl.h" // contains glm!
+
+//#include "majda_glm.h"
+
+
+// for UNO...
 
 //#define __CS  10
 //#define __RS  8
@@ -7,122 +12,17 @@
 
 //ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
 
+
+
+
 #define __CS  16
 #define __RS  5
 #define __DC  4
 
 ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
 
-/*
-struct vec3f
-{
-  float x;
-  float y;
-  float z;
-
-  vec3f(float X, float Y, float Z) {
-    x = X;
-    y = Y;
-    z = Z;
-  }
-
-  vec3f() {
-
-  }
-
-  float get_length() {
-    return sqrt(x*x + y*y + z*z);
-  }
-
-  void normalize() {
-    auto len = this->get_length();
-    
-    x /= len;
-    y /= len;
-    z /= len;
-  }
-};
-*/
-
-struct triangle
-{
-  vec3f p[3];
-
-  triangle() {
-
-  }
-};
-
-/*
-struct mat4f
-{
-  float m[4][4] = { { 0 } };
-};
 
 
-float dot(const vec3f& v1, const vec3f& v2)
-{
-  return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-}
-
-vec3f cross(const vec3f& v1, const vec3f& v2)
-{
-  vec3f v = vec3f(0, 0, 0);
-  
-  v.x = v1.y * v2.z - v1.z * v2.y;
-  v.y = v1.z * v2.x - v1.x * v2.z;
-  v.z = v1.x * v2.y - v1.y * v2.x;
-
-  return v;
-}
-
-
-vec3f operator+(const vec3f& v1, const vec3f& v2)
-{
-  return vec3f(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
-}
-
-vec3f operator-(const vec3f& v1, const vec3f& v2)
-{
-  return vec3f(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
-}
-
-*/
-
-void DrawTriangle(triangle t, unsigned int color, bool clean) {
-  //DrawTriangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color, clean);
-  tft.draw_triangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color);
-}
-
-void DrawTriangle(short x0, short y0, short x1, short y1, short x2, short y2, unsigned int color, bool clean)
-{
-  tft.draw_line(x0, y0, x1, y1, color);
-  tft.draw_line(x1, y1, x2, y2, color);
-  tft.draw_line(x2, y2, x0, y0, color);
-}
-
-
-/*
- 
-vec3f multiply_mat4_vec3(vec3f v, mat4f m) {
-  vec3f r;
-
-  r.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + m.m[3][0];
-  r.y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + m.m[3][1];
-  r.z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] + m.m[3][2];
-
-  float w = v.x * m.m[0][3] + v.y * m.m[1][3] + v.z * m.m[2][3] + m.m[3][3];
-
-  if (w == 0.0f)
-    return r;
-
-  r.x /= w;
-  r.y /= w;
-  r.z /= w;
-
-  return r;
-}
-*/
 
 
 const int mesh_len = 12;
@@ -177,54 +77,21 @@ void load() {
   float fov = 90.0f * 3.14159f / 180.0f;
   float aspect = (float)tft.WIDTH / (float)tft.HEIGHT;
 
-  /*
-  mat_proj.m[0][0] = fov * aspect;
-  mat_proj.m[1][1] = fov;
-  mat_proj.m[2][2] = f_far / (f_far - f_near);
-  mat_proj.m[3][2] = (-f_far * f_near) / (f_far - f_near);
-  mat_proj.m[2][3] = 1.0f;
-  mat_proj.m[3][3] = 0.0f;
-  */
-
   mat_proj = mat4f::projection(fov, f_near, f_far, aspect);
 }
 
-//float zt = 2.0f;
-//float xt = 0.0f;
 
-/*
-void populate_rotZ(mat4f &m, float f) {
-  m.m[0][0] = cosf(f);
-  m.m[0][1] = sinf(f);
-  m.m[1][0] = -sinf(f);
-  m.m[1][1] = cosf(f);
-  m.m[2][2] = 1;
-  m.m[3][3] = 1;
-}
-
-void populate_rotX(mat4f &m, float f) {
-  m.m[0][0] = 1;
-  m.m[1][1] = cosf(f * 0.5f);
-  m.m[1][2] = sinf(f * 0.5f);
-  m.m[2][1] = -sinf(f * 0.5f);
-  m.m[2][2] = cosf(f * 0.5f);
-  m.m[3][3] = 1;
-}
-*/
 
 float theta = 0;
 
 void render_loop(unsigned int color, bool clean) {
   mat4f mat_mod;
 
-  //populate_rotZ(mat_z, theta);
-  //populate_rotX(mat_x, theta);
-
   mat_mod = mat4f::rotation_Z(theta);
   mat_mod = mat_mod * mat4f::rotation_X(theta);
   mat_mod = mat_mod * mat4f::translation(vec3f(0, 0, 3.25f));
 
-  //rot = mat_z * mat_x;
+  
 
 
   triangle t;
@@ -239,21 +106,11 @@ void render_loop(unsigned int color, bool clean) {
 
     for (byte v = 0; v < 3; v++)
     {
-      // translation
-      //t.p[v].z += zt;
-      //t.p[v].x += 1.0;
-      //t.p[v].y += xt;
-
-      //t_proj.p[v] = mat4f::mult_vec3f(t.p[v], mat_z);
-      //t_proj.p[v] = mat4f::mult_vec3f(t_proj.p[v], mat_x);
-      
+      // model translation
       t_proj.p[v] = mat4f::mult_vec3f(t.p[v], mat_mod);
-
-      //t_proj.p[v].x += 0.0f;
-      //t_proj.p[v].y += 0.0f;
-      //t_proj.p[v].z += 3.25f;
     }
-
+    
+    // normal calculation
     l1 = t_proj.p[1] - t_proj.p[0];
     l2 = t_proj.p[2] - t_proj.p[0];
     
@@ -290,7 +147,7 @@ void render_loop(unsigned int color, bool clean) {
     color = (color << 5) + lum * 31; // b (31)
  
 
-    DrawTriangle(t_proj, color, clean);
+    tft.draw_triangle((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color);
   }
 }
 
