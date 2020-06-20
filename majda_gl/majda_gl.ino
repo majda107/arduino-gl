@@ -118,7 +118,7 @@ void load() {
 
 
 
-void render_loop(unsigned int color, bool clean) {
+void render_loop() {
   //mat4f mat_mod;
 
   //mat_mod = mat4f::rotation_Z(theta);
@@ -133,6 +133,8 @@ void render_loop(unsigned int color, bool clean) {
   triangle t_proj;
   vec3f l1, l2, normal, to_camera;
   float dot_camera, lum;
+
+  unsigned int color;
 
   for (int ti = 0; ti < mesh_len; ti++)
   {
@@ -178,7 +180,7 @@ void render_loop(unsigned int color, bool clean) {
 
     lum = min(abs(dot_camera*0.75f) + 0.25f, 1.0f);
     
-    unsigned int color = lum * 31;   // r (31)
+    color = lum * 31;   // r (31)
     color = (color << 6) + lum * 63; // g (63)
     color = (color << 5) + lum * 31; // b (31)
  
@@ -238,7 +240,7 @@ void loop() {
     //tft.fill_screen(BLACK);
 
     process_z_buff();
-    render_loop(WHITE, false);
+    render_loop();
     tft_z_buff();
    
     render = false;
