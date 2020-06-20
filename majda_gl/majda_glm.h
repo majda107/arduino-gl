@@ -69,7 +69,7 @@ struct mat4f
   float m[4][4] = { { 0 } };
 
   // multiplication
-  static vec3f mult_mat4f_vec3f(const vec3f &v, const mat4f &m)
+  static vec3f mult_vec3f(const vec3f &v, const mat4f &m)
   {
     vec3f r;
 
@@ -89,7 +89,7 @@ struct mat4f
     return r;
   }
 
-  static vec3f mult_mat4f_mat4f(const mat4f &m, const mat4f &n)
+  static mat4f mult_mat4f(const mat4f &m, const mat4f &n)
   {
     mat4f r;
 
@@ -103,12 +103,14 @@ struct mat4f
   {
     mat4f m;
     
-    m.m[0][0] = fov * aspect;
+    m.m[0][0] = fov * (1.0f/aspect);
     m.m[1][1] = fov;
-    m.m[2][2] = f_far / (f_far - f_near);
-    m.m[3][2] = (-f_far * f_near) / (f_far - f_near);
+    m.m[2][2] = far / (far - near);
+    m.m[3][2] = (-far * near) / (far - near);
     m.m[2][3] = 1.0f;
     m.m[3][3] = 0.0f;
+
+    return m;
   }
 
   static mat4f identity()

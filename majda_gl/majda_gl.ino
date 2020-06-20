@@ -1,4 +1,5 @@
 #include "ILI9163C_TFT.h"
+#include "majda_glm.h"
 
 //#define __CS  10
 //#define __RS  8
@@ -12,7 +13,7 @@
 
 ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
 
-
+/*
 struct vec3f
 {
   float x;
@@ -41,7 +42,7 @@ struct vec3f
     z /= len;
   }
 };
-
+*/
 
 struct triangle
 {
@@ -52,6 +53,7 @@ struct triangle
   }
 };
 
+/*
 struct mat4f
 {
   float m[4][4] = { { 0 } };
@@ -85,7 +87,7 @@ vec3f operator-(const vec3f& v1, const vec3f& v2)
   return vec3f(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
 }
 
-
+*/
 
 void DrawTriangle(triangle t, unsigned int color, bool clean) {
   //DrawTriangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color, clean);
@@ -100,7 +102,7 @@ void DrawTriangle(short x0, short y0, short x1, short y1, short x2, short y2, un
 }
 
 
-
+/*
  
 vec3f multiply_mat4_vec3(vec3f v, mat4f m) {
   vec3f r;
@@ -120,6 +122,7 @@ vec3f multiply_mat4_vec3(vec3f v, mat4f m) {
 
   return r;
 }
+*/
 
 
 const int mesh_len = 12;
@@ -172,19 +175,24 @@ void load() {
   float f_near = 0.1f;
   float f_far = 1000.0f;
   float fov = 90.0f * 3.14159f / 180.0f;
-  float aspect = (float)tft.HEIGHT / (float)tft.WIDTH;
+  float aspect = (float)tft.WIDTH / (float)tft.HEIGHT;
 
+  /*
   mat_proj.m[0][0] = fov * aspect;
   mat_proj.m[1][1] = fov;
   mat_proj.m[2][2] = f_far / (f_far - f_near);
   mat_proj.m[3][2] = (-f_far * f_near) / (f_far - f_near);
   mat_proj.m[2][3] = 1.0f;
   mat_proj.m[3][3] = 0.0f;
+  */
+
+  mat_proj = mat4f::projection(fov, f_near, f_far, aspect);
 }
 
 //float zt = 2.0f;
 //float xt = 0.0f;
 
+/*
 void populate_rotZ(mat4f &m, float f) {
   m.m[0][0] = cosf(f);
   m.m[0][1] = sinf(f);
@@ -202,14 +210,18 @@ void populate_rotX(mat4f &m, float f) {
   m.m[2][2] = cosf(f * 0.5f);
   m.m[3][3] = 1;
 }
+*/
 
 float theta = 0;
 
 void render_loop(unsigned int color, bool clean) {
   mat4f mat_z, mat_x;
 
-  populate_rotZ(mat_z, theta);
-  populate_rotX(mat_x, theta);
+  //populate_rotZ(mat_z, theta);
+  //populate_rotX(mat_x, theta);
+
+  mat_z = mat4f::rotation_Z(theta);
+  mat_x = mat4f::rotation_X(theta);
 
 
   triangle t;
@@ -229,8 +241,8 @@ void render_loop(unsigned int color, bool clean) {
       //t.p[v].x += 1.0;
       //t.p[v].y += xt;
 
-      t_proj.p[v] = multiply_mat4_vec3(t.p[v], mat_z);
-      t_proj.p[v] = multiply_mat4_vec3(t_proj.p[v], mat_x);
+      t_proj.p[v] = mat4f::mult_vec3f(t.p[v], mat_z);
+      t_proj.p[v] = mat4f::mult_vec3f(t_proj.p[v], mat_x);
 
       t_proj.p[v].x += 0.0f;
       t_proj.p[v].y += 0.0f;
@@ -240,13 +252,13 @@ void render_loop(unsigned int color, bool clean) {
     l1 = t_proj.p[1] - t_proj.p[0];
     l2 = t_proj.p[2] - t_proj.p[0];
     
-    normal = cross(l1, l2);
+    normal = vec3f::cross(l1, l2);
     normal.normalize();
 
     to_camera = t_proj.p[0] - camera;
     to_camera.normalize();
     
-    dot_camera = dot(to_camera, normal);
+    dot_camera = vec3f::dot(to_camera, normal);
     if(dot_camera > 0.0f) 
     {
       continue;
@@ -255,7 +267,7 @@ void render_loop(unsigned int color, bool clean) {
     for(byte v = 0; v < 3; v++)
     {
       // projection
-      t_proj.p[v] = multiply_mat4_vec3(t_proj.p[v], mat_proj);
+      t_proj.p[v] = mat4f::mult_vec3f(t_proj.p[v], mat_proj);
 
       // scale
       t_proj.p[v].x += 1.0f;
@@ -279,10 +291,17 @@ void render_loop(unsigned int color, bool clean) {
 
 
 
+#define __B1 0
+#define __B2 2
+
+bool moving = false;
 
 
 void setup()
 {
+  pinMode(__B1, INPUT_PULLUP);
+  pinMode(__B2, INPUT_PULLUP);
+  
   tft.start();
   load();
 }
@@ -290,14 +309,16 @@ void setup()
 
 
 
-
-
-
-
 void loop() {
-  tft.fill_screen(BLACK);
 
-  theta += 0.2f;
+  moving = ((digitalRead(__B1) != HIGH) || (digitalRead(__B2) != HIGH))? true : false;
+  
+  if(moving)
+  {
+    tft.fill_screen(BLACK);
+    theta += 0.2f;
+  }
+  
   render_loop(WHITE, false);  
 
   delay(14);
