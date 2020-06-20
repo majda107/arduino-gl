@@ -21,10 +21,10 @@
 
 ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
 
-/*
-byte z_buff[128][128] = { { 0 } };
 
-void clear_z_buff(byte val = 0)
+uint8_t z_buff[128][128] = { { 0 } };
+
+void clear_z_buff(uint8_t val = 0)
 {
   for(byte x = 0; x < 128; x++)
     for(byte y = 0; y < 128; y++)
@@ -35,21 +35,23 @@ void process_z_buff()
 {
   for(byte x = 0; x < 128; x++)
     for(byte y = 0; y < 128; y++)
-      if(z_buff[x][y] == 20)
-        z_buff[x][y] = 10;
-}
-
-void tft_z_buff()
-{
-  for(byte x = 0; x < 128; x++)
-    for(byte y = 0; y < 128; y++)
-      if(z_buff[x][y] == 10)
+    {
+      if(z_buff[x][y] == 0)
+        continue;
+      
+      if((z_buff[x][y] & 1 << 0) > 0)
+      {
+        z_buff[x][y] &= ~(1 << 0);
+      }
+      else
       {
         tft.set_pixel(x, y, BLACK);
         z_buff[x][y] = 0;
       }
+    }
+      
 }
-*/
+
 
 
 
@@ -191,9 +193,9 @@ void render_loop() {
     color = (color << 6) + lum * 63; // g (63)
     color = (color << 5) + lum * 31; // b (31)
  
-
-    //tft.draw_triangle_buff((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color, z_buff, 20);
-    tft.draw_triangle((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color);
+    
+    tft.draw_triangle_buff((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color, z_buff, (color & 0xfe));
+    //tft.draw_triangle((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color);
   }
 }
 
@@ -219,7 +221,7 @@ void setup()
 
 
 
-  //clear_z_buff(0);
+  clear_z_buff(10);
   tft.fill_screen(BLACK);
 
   pinMode(__B3, INPUT_PULLUP);
@@ -260,11 +262,10 @@ void loop() {
   
   if(render)
   {
-    tft.fill_screen(BLACK);
+    //tft.fill_screen(BLACK);
 
-    //process_z_buff();
     render_loop();
-    //tft_z_buff();
+    process_z_buff();
    
     render = false;
   } 
