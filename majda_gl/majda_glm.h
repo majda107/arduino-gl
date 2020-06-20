@@ -125,6 +125,17 @@ struct mat4f
     return m;
   }
 
+  static mat4f translation(vec3f v)
+  {
+    mat4f m = mat4f::identity();
+    
+    m.m[3][0] = v.x;
+    m.m[3][1] = v.y;
+    m.m[3][2] = v.z;
+
+    return m;
+  }
+
 
   // rotations
   static mat4f rotation_X(float a)
