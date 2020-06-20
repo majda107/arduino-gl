@@ -1,11 +1,16 @@
 #include "ILI9163C_TFT.h"
 
-#define __CS  10
-#define __RS  8
-#define __DC  9
+//#define __CS  10
+//#define __RS  8
+//#define __DC  9
+
+//ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
+
+#define __CS  16
+#define __RS  5
+#define __DC  4
 
 ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
-
 
 
 struct vec3f
@@ -49,7 +54,7 @@ struct triangle
 
 struct mat4f
 {
-  float m[4][4] = { 0 };
+  float m[4][4] = { { 0 } };
 };
 
 
@@ -295,5 +300,5 @@ void loop() {
   theta += 0.2f;
   render_loop(WHITE, false);  
 
-  delay(150);
+  delay(14);
 }
