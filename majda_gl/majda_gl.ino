@@ -215,15 +215,14 @@ void populate_rotX(mat4f &m, float f) {
 float theta = 0;
 
 void render_loop(unsigned int color, bool clean) {
-  mat4f mat_rot, mat_tr;
+  mat4f mat_mod;
 
   //populate_rotZ(mat_z, theta);
   //populate_rotX(mat_x, theta);
 
-  mat_rot = mat4f::rotation_Z(theta);
-  mat_rot = mat_rot * mat4f::rotation_X(theta);
-
-  mat_tr = mat4f::translation(vec3f(0, 0, 3.25f));
+  mat_mod = mat4f::rotation_Z(theta);
+  mat_mod = mat_mod * mat4f::rotation_X(theta);
+  mat_mod = mat_mod * mat4f::translation(vec3f(0, 0, 3.25f));
 
   //rot = mat_z * mat_x;
 
@@ -248,8 +247,7 @@ void render_loop(unsigned int color, bool clean) {
       //t_proj.p[v] = mat4f::mult_vec3f(t.p[v], mat_z);
       //t_proj.p[v] = mat4f::mult_vec3f(t_proj.p[v], mat_x);
       
-      t_proj.p[v] = mat4f::mult_vec3f(t.p[v], mat_rot);
-      t_proj.p[v] = mat4f::mult_vec3f(t_proj.p[v], mat_tr);
+      t_proj.p[v] = mat4f::mult_vec3f(t.p[v], mat_mod);
 
       //t_proj.p[v].x += 0.0f;
       //t_proj.p[v].y += 0.0f;
