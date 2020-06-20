@@ -21,7 +21,7 @@
 
 ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
 
-
+/*
 byte z_buff[128][128] = { { 0 } };
 
 void clear_z_buff(byte val = 0)
@@ -49,6 +49,7 @@ void tft_z_buff()
         z_buff[x][y] = 0;
       }
 }
+*/
 
 
 
@@ -56,7 +57,7 @@ const int mesh_len = 12;
 triangle cube_mesh[mesh_len];
 
 //vec3f camera = vec3f(0, 0, 0);
-Camera camera = Camera(vec3f(0, 0, -3));
+Camera camera = Camera(vec3f(0, 0, -4));
 
 mat4f mat_proj;
 
@@ -155,7 +156,8 @@ void render_loop() {
     normal = vec3f::cross(l1, l2);
     normal.normalize();
 
-    to_camera = t_proj.p[0] - camera.pos;
+    //to_camera = t_proj.p[0] - camera.pos;
+    to_camera = t_proj.p[0];
     to_camera.normalize();
     
     dot_camera = vec3f::dot(to_camera, normal);
@@ -178,14 +180,15 @@ void render_loop() {
     }
     
 
-    lum = min(abs(dot_camera*0.75f) + 0.25f, 1.0f);
+    lum = min(dot_camera*-0.75f + 0.25f, 1.0f);
     
     color = lum * 31;   // r (31)
     color = (color << 6) + lum * 63; // g (63)
     color = (color << 5) + lum * 31; // b (31)
  
 
-    tft.draw_triangle_buff((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color, z_buff, 20);
+    //tft.draw_triangle_buff((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color, z_buff, 20);
+    tft.draw_triangle((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color);
   }
 }
 
@@ -197,7 +200,7 @@ void render_loop() {
 bool render;
 
 void setup()
-{
+{  
   pinMode(__B1, INPUT_PULLUP);
   pinMode(__B2, INPUT_PULLUP);
   
@@ -209,7 +212,7 @@ void setup()
 
 
 
-  clear_z_buff(0);
+  //clear_z_buff(0);
   tft.fill_screen(BLACK);
 }
 
@@ -222,14 +225,18 @@ void loop() {
 
   if((digitalRead(__B1) != HIGH))
   {
-    camera.pos.x += 0.15f;
+    //camera.pos.x += 0.15f;
+    camera.yaw += 0.2f;
+    
     camera.build_view();
     render = true;
   }
 
   if((digitalRead(__B2) != HIGH))
   {
-    camera.pos.x -= 0.15f;
+    auto camera_step = camera.strafe() * 0.15f;
+    camera.pos = camera.pos - camera_step;
+    
     camera.build_view();
     render = true;
   }
@@ -237,11 +244,11 @@ void loop() {
   
   if(render)
   {
-    //tft.fill_screen(BLACK);
+    tft.fill_screen(BLACK);
 
-    process_z_buff();
+    //process_z_buff();
     render_loop();
-    tft_z_buff();
+    //tft_z_buff();
    
     render = false;
   } 

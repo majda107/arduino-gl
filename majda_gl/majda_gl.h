@@ -22,6 +22,16 @@ class Camera
 public:
   mat4f view;
 
+  vec3f forward()
+  {
+    return vec3f(this->view.m[0][2], this->view.m[1][2], this->view.m[2][2]);
+  }
+
+  vec3f strafe()
+  {
+    return vec3f(this->view.m[0][0], this->view.m[1][0], this->view.m[2][0]);
+  }
+
   vec3f pos;
   float pitch;
   float yaw;
@@ -36,10 +46,10 @@ public:
 
   void build_view()
   {
-    this->view = mat4f::rotation_Z(-(this->yaw));
+    this->view = mat4f::translation(-(this->pos));
+    
     this->view = this->view * mat4f::rotation_X(-(this->pitch));
-
-    this->view = this->view * mat4f::translation(-(this->pos));
+    this->view = this->view * mat4f::rotation_Y(-(this->yaw));
   }
 
 };

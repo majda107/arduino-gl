@@ -48,6 +48,10 @@ struct vec3f
   
 };
 
+vec3f operator*(const vec3f& v, float s)
+{
+  return vec3f(v.x * s, v.y * s, v.z * s);
+}
 
 vec3f operator+(const vec3f& v1, const vec3f& v2)
 {
