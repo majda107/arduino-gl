@@ -90,7 +90,6 @@ void load() {
 
 
 
-float theta = 0;
 
 void render_loop(unsigned int color, bool clean) {
   //mat4f mat_mod;
@@ -166,8 +165,7 @@ void render_loop(unsigned int color, bool clean) {
 #define __B1 0
 #define __B2 2
 
-bool moving = false;
-
+bool render;
 
 void setup()
 {
@@ -176,6 +174,8 @@ void setup()
   
   tft.start();
   load();
+
+  render = true;
 }
 
 
@@ -183,15 +183,30 @@ void setup()
 
 void loop() {
 
-  moving = ((digitalRead(__B1) != HIGH) || (digitalRead(__B2) != HIGH))? true : false;
-  
-  if(moving)
+  //moving = ((digitalRead(__B1) != HIGH) || (digitalRead(__B2) != HIGH))? true : false;
+
+  if((digitalRead(__B1) != HIGH))
   {
-    tft.fill_screen(BLACK);
-    theta += 0.2f;
+    camera.pos.x += 0.5f;
+    camera.build_view();
+    render = true;
+  }
+
+  if((digitalRead(__B2) != HIGH))
+  {
+    camera.pos.x -= 0.5f;
+    camera.build_view();
+    render = true;
   }
   
-  render_loop(WHITE, false);  
+  
+  if(render)
+  {
+    tft.fill_screen(BLACK);
+    render_loop(WHITE, false);
+    
+    render = false;
+  } 
 
   delay(14);
 }
