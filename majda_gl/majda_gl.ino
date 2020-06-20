@@ -22,6 +22,33 @@
 ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
 
 
+byte z_buff[128][128] = { { 0 } };
+
+void clear_z_buff(byte val = 0)
+{
+  for(byte x = 0; x < 128; x++)
+    for(byte y = 0; y < 128; y++)
+      z_buff[x][y] = val;
+}
+
+void process_z_buff()
+{
+  for(byte x = 0; x < 128; x++)
+    for(byte y = 0; y < 128; y++)
+      if(z_buff[x][y] == 20)
+        z_buff[x][y] = 10;
+}
+
+void tft_z_buff()
+{
+  for(byte x = 0; x < 128; x++)
+    for(byte y = 0; y < 128; y++)
+      if(z_buff[x][y] == 10)
+      {
+        tft.set_pixel(x, y, BLACK);
+        z_buff[x][y] = 0;
+      }
+}
 
 
 
@@ -156,7 +183,7 @@ void render_loop(unsigned int color, bool clean) {
     color = (color << 5) + lum * 31; // b (31)
  
 
-    tft.draw_triangle((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color);
+    tft.draw_triangle_buff((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color, z_buff, 20);
   }
 }
 
@@ -176,6 +203,12 @@ void setup()
   load();
 
   render = true;
+
+
+
+
+  clear_z_buff(0);
+  tft.fill_screen(BLACK);
 }
 
 
@@ -187,14 +220,14 @@ void loop() {
 
   if((digitalRead(__B1) != HIGH))
   {
-    camera.pos.x += 0.5f;
+    camera.pos.x += 0.15f;
     camera.build_view();
     render = true;
   }
 
   if((digitalRead(__B2) != HIGH))
   {
-    camera.pos.x -= 0.5f;
+    camera.pos.x -= 0.15f;
     camera.build_view();
     render = true;
   }
@@ -202,11 +235,14 @@ void loop() {
   
   if(render)
   {
-    tft.fill_screen(BLACK);
+    //tft.fill_screen(BLACK);
+
+    process_z_buff();
     render_loop(WHITE, false);
-    
+    tft_z_buff();
+   
     render = false;
   } 
 
-  delay(14);
+  //delay(14);
 }
