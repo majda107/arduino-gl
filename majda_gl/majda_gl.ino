@@ -178,6 +178,11 @@ void render_loop() {
       t_proj.p[v].x *= 0.5f * (float)tft.WIDTH;
       t_proj.p[v].y *= 0.5f * (float)tft.HEIGHT;
     }
+
+    //Serial.println(t_proj.p[0].z);
+    
+    if(t_proj.p[0].z > 1 || t_proj.p[1].z > 1 || t_proj.p[2].z > 1) // drawing behind camera
+      continue;
     
 
     lum = min(dot_camera*-0.75f + 0.25f, 1.0f);
@@ -196,13 +201,15 @@ void render_loop() {
 
 #define __B1 0
 #define __B2 2
+#define __B3 12
 
 bool render;
 
 void setup()
-{  
+{    
   pinMode(__B1, INPUT_PULLUP);
   pinMode(__B2, INPUT_PULLUP);
+  
   
   tft.start();
   load();
@@ -214,32 +221,41 @@ void setup()
 
   //clear_z_buff(0);
   tft.fill_screen(BLACK);
+
+  pinMode(__B3, INPUT_PULLUP);
 }
 
 
 
+float mov;
 
 void loop() {
 
-  //moving = ((digitalRead(__B1) != HIGH) || (digitalRead(__B2) != HIGH))? true : false;
+  mov = 0;
+  if(digitalRead(__B1) != HIGH)
+    mov += 0.2f;
 
-  if((digitalRead(__B1) != HIGH))
+  if(digitalRead(__B2) != HIGH)
+    mov -= 0.2f;
+
+  if(mov != 0)
   {
-    //camera.pos.x += 0.15f;
-    camera.yaw += 0.2f;
-    
+    if(digitalRead(__B3) != HIGH)
+    {
+      camera.yaw -= mov;
+    }
+    else
+    {
+      auto camera_step = camera.strafe() * mov;
+      camera.pos = camera.pos - camera_step;
+    }
+
     camera.build_view();
     render = true;
   }
 
-  if((digitalRead(__B2) != HIGH))
-  {
-    auto camera_step = camera.strafe() * 0.15f;
-    camera.pos = camera.pos - camera_step;
-    
-    camera.build_view();
-    render = true;
-  }
+
+  
   
   
   if(render)
