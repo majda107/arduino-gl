@@ -93,7 +93,12 @@ struct mat4f
   {
     mat4f r;
 
-    // idk, steal somewhere, it's 4 AM DUH GO SLEEP LOL
+    for(byte x = 0; x < 4; x++)
+      for(byte y = 0; y < 4; y++)
+        for(byte p = 0; p < 4; p++)
+        {
+          r.m[x][y] += m.m[x][p] * n.m[p][y];
+        }
     
     return r;
   }
@@ -163,4 +168,10 @@ struct mat4f
     
     return m;
   }
+  
 };
+
+mat4f operator*(const mat4f &m, const mat4f &n)
+{
+  return mat4f::mult_mat4f(m, n);
+}
