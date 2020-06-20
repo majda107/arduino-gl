@@ -28,7 +28,8 @@ ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
 const int mesh_len = 12;
 triangle cube_mesh[mesh_len];
 
-vec3f camera = vec3f(0, 0, 0);
+//vec3f camera = vec3f(0, 0, 0);
+Camera camera = Camera(vec3f(0, 0, -3));
 
 mat4f mat_proj;
 
@@ -72,12 +73,19 @@ void load() {
 
 
 
+  
+  // projection init
   float f_near = 0.1f;
   float f_far = 1000.0f;
   float fov = 90.0f * 3.14159f / 180.0f;
   float aspect = (float)tft.WIDTH / (float)tft.HEIGHT;
 
   mat_proj = mat4f::projection(fov, f_near, f_far, aspect);
+
+
+
+  // camera init
+  camera.build_view();
 }
 
 
@@ -85,11 +93,11 @@ void load() {
 float theta = 0;
 
 void render_loop(unsigned int color, bool clean) {
-  mat4f mat_mod;
+  //mat4f mat_mod;
 
-  mat_mod = mat4f::rotation_Z(theta);
-  mat_mod = mat_mod * mat4f::rotation_X(theta);
-  mat_mod = mat_mod * mat4f::translation(vec3f(0, 0, 3.25f));
+  //mat_mod = mat4f::rotation_Z(theta);
+  //mat_mod = mat_mod * mat4f::rotation_X(theta);
+  //mat_mod = mat_mod * mat4f::translation(vec3f(0, 0, 3.25f));
 
   
 
@@ -107,7 +115,9 @@ void render_loop(unsigned int color, bool clean) {
     for (byte v = 0; v < 3; v++)
     {
       // model translation
-      t_proj.p[v] = mat4f::mult_vec3f(t.p[v], mat_mod);
+      //t_proj.p[v] = mat4f::mult_vec3f(t.p[v], mat_mod);
+      
+      t_proj.p[v] = mat4f::mult_vec3f(t.p[v], camera.view);
     }
     
     // normal calculation
@@ -117,7 +127,7 @@ void render_loop(unsigned int color, bool clean) {
     normal = vec3f::cross(l1, l2);
     normal.normalize();
 
-    to_camera = t_proj.p[0] - camera;
+    to_camera = t_proj.p[0] - camera.pos;
     to_camera.normalize();
     
     dot_camera = vec3f::dot(to_camera, normal);

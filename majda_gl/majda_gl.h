@@ -36,10 +36,10 @@ public:
 
   void build_view()
   {
-    this->view = mat4f::rotation_Z(this->yaw);
-    this->view = this->view * mat4f::rotation_X(this->pitch);
+    this->view = mat4f::rotation_Z(-(this->yaw));
+    this->view = this->view * mat4f::rotation_X(-(this->pitch));
 
-    this->view = this->view * mat4f::translation(this->pos);
+    this->view = this->view * mat4f::translation(-(this->pos));
   }
 
 };
