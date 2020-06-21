@@ -130,9 +130,9 @@ struct mat4f
   }
 
 
-  static mat4f point_at(const vec3f& p, const vec3f& t, const vec3f& up)
+  static mat4f point_at(const vec3f& p, const vec3f& at, const vec3f& up)
   {
-    vec3f f = t - p;
+    vec3f f = at - p;
     f.normalize();
 
     vec3f a = f * vec3f::dot(up, f);

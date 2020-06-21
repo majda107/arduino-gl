@@ -187,7 +187,7 @@ void render_loop() {
       continue;
     
 
-    lum = min(dot_camera*-0.75f + 0.25f, 1.0f);
+    lum = min(dot_camera*-0.85f + 0.15f, 1.0f);
     
     color = lum * 31;   // r (31)
     color = (color << 6) + lum * 63; // g (63)
@@ -248,8 +248,9 @@ void loop() {
     }
     else
     {
-      auto camera_step = camera.strafe() * mov;
-      camera.pos = camera.pos - camera_step;
+      //auto camera_step = camera.strafe() * mov;
+      //camera.pos = camera.pos - camera_step;
+      camera.pos.x -= mov;
     }
 
     camera.build_view();
