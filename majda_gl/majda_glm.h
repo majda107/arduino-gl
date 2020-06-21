@@ -129,6 +129,64 @@ struct mat4f
     return m;
   }
 
+
+  static mat4f point_at(const vec3f& p, const vec3f& t, const vec3f& up)
+  {
+    vec3f f = t - p;
+    f.normalize();
+
+    vec3f a = f * vec3f::dot(up, f);
+    vec3f newUp = up - a;
+    newUp.normalize();
+
+    vec3f r = vec3f::cross(newUp, f);
+
+    mat4f m;
+    m.m[0][0] = r.x;  
+    m.m[0][1] = r.y;  
+    m.m[0][2] = r.z;  
+    m.m[0][3] = 0.0f;
+    m.m[1][0] = newUp.x;  
+    m.m[1][1] = newUp.y;   
+    m.m[1][2] = newUp.z;   
+    m.m[1][3] = 0.0f;
+    m.m[2][0] = f.x;  
+    m.m[2][1] = f.y;  
+    m.m[2][2] = f.z;  
+    m.m[2][3] = 0.0f;
+    m.m[3][0] = p.x;     
+    m.m[3][1] = p.y;     
+    m.m[3][2] = p.z;     
+    m.m[3][3] = 1.0f;
+    return m;
+  }
+
+  static mat4f quick_inverse(const mat4f& n)
+  {
+    mat4f m;
+    m.m[0][0] = n.m[0][0];
+    m.m[0][1] = n.m[1][0]; 
+    m.m[0][2] = n.m[2][0]; 
+    m.m[0][3] = 0.0f;
+    m.m[1][0] = n.m[0][1]; 
+    m.m[1][1] = n.m[1][1]; 
+    m.m[1][2] = n.m[2][1]; 
+    m.m[1][3] = 0.0f;
+    m.m[2][0] = n.m[0][2];
+    
+    m.m[2][1] = n.m[1][2]; 
+    m.m[2][2] = n.m[2][2]; 
+    m.m[2][3] = 0.0f;
+    
+    m.m[3][0] = -(n.m[3][0] * m.m[0][0] + n.m[3][1] * m.m[1][0] + n.m[3][2] * m.m[2][0]);
+    m.m[3][1] = -(n.m[3][0] * m.m[0][1] + n.m[3][1] * m.m[1][1] + n.m[3][2] * m.m[2][1]);
+    m.m[3][2] = -(n.m[3][0] * m.m[0][2] + n.m[3][1] * m.m[1][2] + n.m[3][2] * m.m[2][2]);
+    m.m[3][3] = 1.0f;
+    
+    return m;
+  }
+  
+
   static mat4f identity()
   {
     mat4f m;

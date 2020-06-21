@@ -221,7 +221,7 @@ void setup()
 
 
 
-  clear_z_buff(10);
+  clear_z_buff(0);
   tft.fill_screen(BLACK);
 
   pinMode(__B3, INPUT_PULLUP);
