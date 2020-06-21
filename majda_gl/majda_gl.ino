@@ -22,6 +22,7 @@
 ILI9163C_TFT tft = ILI9163C_TFT(__CS, __RS, __DC);
 
 
+/*
 uint8_t z_buff[128][128] = { { 0 } };
 
 void clear_z_buff(uint8_t val = 0)
@@ -51,6 +52,7 @@ void process_z_buff()
     }
       
 }
+*/
 
 
 
@@ -58,10 +60,12 @@ void process_z_buff()
 const int mesh_len = 12;
 triangle cube_mesh[mesh_len];
 
-//vec3f camera = vec3f(0, 0, 0);
 Camera camera = Camera(vec3f(0, 0, -4));
-
 mat4f mat_proj;
+
+MeshEntity cube = MeshEntity(cube_mesh, mesh_len, mat4f::translation(vec3f(-1.25f, -1.25f, 0)));
+MeshEntity cube2 = MeshEntity(cube_mesh, mesh_len, mat4f::identity());
+MeshEntity cube3 = MeshEntity(cube_mesh, mesh_len, mat4f::translation(vec3f(1.25f, 1.25f, 0)));
 
 void load() {
   float mesh [][9] {
@@ -119,21 +123,76 @@ void load() {
 }
 
 
-
-
-void render_loop() {
-  //mat4f mat_mod;
-
-  //mat_mod = mat4f::rotation_Z(theta);
-  //mat_mod = mat_mod * mat4f::rotation_X(theta);
-  //mat_mod = mat_mod * mat4f::translation(vec3f(0, 0, 3.25f));
-
-  
-
-
+void render_entity(const MeshEntity& entity)
+{
   triangle t;
 
-  triangle t_proj;
+  vec3f l1, l2, normal, to_camera;
+  float dot_camera, lum;
+
+  unsigned int color;
+
+  mat4f world_mat = entity.model_mat * camera.view;
+
+  for (int ti = 0; ti < entity.mesh_len; ti++)
+  {
+    t = entity.mesh[ti];
+
+    // transformation
+    t.p[0] = mat4f::mult_vec3f(t.p[0], world_mat);
+    t.p[1] = mat4f::mult_vec3f(t.p[1], world_mat);
+    t.p[2] = mat4f::mult_vec3f(t.p[2], world_mat);
+    
+    
+    // normal calculation
+    l1 = t.p[1] - t.p[0];
+    l2 = t.p[2] - t.p[0];
+    
+    normal = vec3f::cross(l1, l2);
+    normal.normalize();
+
+    to_camera = t.p[0];
+    to_camera.normalize();
+    
+    dot_camera = vec3f::dot(to_camera, normal);
+    if(dot_camera > 0.0f) 
+    {
+      continue;
+    }
+
+    for(byte v = 0; v < 3; v++)
+    {
+      // projection
+      t.p[v] = mat4f::mult_vec3f(t.p[v], mat_proj);
+
+      // scale
+      t.p[v].x += 1.0f;
+      t.p[v].y += 1.0f;
+
+      t.p[v].x *= 0.5f * (float)tft.WIDTH;
+      t.p[v].y *= 0.5f * (float)tft.HEIGHT;
+    }
+
+    if(t.p[0].z > 1 || t.p[1].z > 1 || t.p[2].z > 1) // drawing behind camera
+      continue;
+    
+
+    lum = min(dot_camera*-0.85f + 0.15f, 1.0f);
+    
+    color = lum * 31;   // r (31)
+    color = (color << 6) + lum * 63; // g (63)
+    color = (color << 5) + lum * 31; // b (31)
+ 
+    
+    //tft.draw_triangle_buff((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color, z_buff, (color & 0xfe));
+    tft.draw_triangle((short)t.p[0].x, (short)t.p[0].y, (short)t.p[1].x, (short)t.p[1].y, (short)t.p[2].x, (short)t.p[2].y, color);
+  }
+}
+
+void render_loop() {
+
+  triangle t, t_proj;
+
   vec3f l1, l2, normal, to_camera;
   float dot_camera, lum;
 
@@ -194,8 +253,8 @@ void render_loop() {
     color = (color << 5) + lum * 31; // b (31)
  
     
-    tft.draw_triangle_buff((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color, z_buff, (color & 0xfe));
-    //tft.draw_triangle((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color);
+    //tft.draw_triangle_buff((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color, z_buff, (color & 0xfe));
+    tft.draw_triangle((short)t_proj.p[0].x, (short)t_proj.p[0].y, (short)t_proj.p[1].x, (short)t_proj.p[1].y, (short)t_proj.p[2].x, (short)t_proj.p[2].y, color);
   }
 }
 
@@ -221,7 +280,7 @@ void setup()
 
 
 
-  clear_z_buff(0);
+  //clear_z_buff(0);
   tft.fill_screen(BLACK);
 
   pinMode(__B3, INPUT_PULLUP);
@@ -246,7 +305,7 @@ void loop() {
     {
       camera.yaw -= mov;
     }
-    else
+    else                                               
     {
       //auto camera_step = camera.strafe() * mov;
       //camera.pos = camera.pos - camera_step;
@@ -263,10 +322,15 @@ void loop() {
   
   if(render)
   {
-    //tft.fill_screen(BLACK);
+    tft.fill_screen(BLACK);
 
-    render_loop();
-    process_z_buff();
+    //render_loop();
+    
+    render_entity(cube);
+    render_entity(cube2);
+    render_entity(cube3);
+    
+    //process_z_buff();
    
     render = false;
   } 

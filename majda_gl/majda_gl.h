@@ -60,3 +60,23 @@ public:
   }
 
 };
+
+
+
+
+
+class MeshEntity
+{
+public:
+  triangle* mesh;
+  uint16_t mesh_len;
+
+  mat4f model_mat;
+
+  MeshEntity(triangle* mesh, uint16_t mesh_len, mat4f model_mat)
+  {
+    this->mesh = mesh;
+    this->mesh_len = mesh_len;
+    this->model_mat = model_mat;
+  }
+};
