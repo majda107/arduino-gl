@@ -11,6 +11,20 @@ struct triangle
   triangle() {
 
   }
+
+  triangle(float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2) {
+    p[0].x = x0;
+    p[1].x = y0;
+    p[2].x = z0;
+
+    p[3].x = x1;
+    p[4].x = y1;
+    p[5].x = z1;
+
+    p[6].x = x2;
+    p[7].x = y2;
+    p[8].x = z2;
+  }
 };
 
 
