@@ -185,6 +185,13 @@ struct mat4f
     
     return m;
   }
+
+  static mat4f look_at(const vec3f& p, const vec3f& at, const vec3f& up)
+  {
+    mat4f m = mat4f::point_at(p, at, up);
+    m = mat4f::quick_inverse(m);
+    return m;
+  }
   
 
   static mat4f identity()

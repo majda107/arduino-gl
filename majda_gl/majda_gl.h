@@ -55,8 +55,8 @@ public:
     //this->view = this->view * mat4f::rotation_X(-(this->pitch));
     //this->view = this->view * mat4f::rotation_Y(-(this->yaw));
     
-    this->view = mat4f::point_at(this->pos, this->look_at, vec3f(0, 1, 0));
-    this->view = mat4f::quick_inverse(this->view);
+    this->view = mat4f::look_at(this->pos, this->look_at, vec3f(0, 1, 0));
+    //this->view = mat4f::quick_inverse(this->view);
   }
 
 };
